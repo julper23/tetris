@@ -67,3 +67,92 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.t-row {
+  display: flex;
+}
+
+.t-board {
+  display: inline-block;
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid grey;
+}
+
+.t-cell {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  color: grey;
+}
+
+.t-cell-0 {
+  background-color: black;
+}
+
+.t-cell-1 {
+  box-sizing: border-box;
+  background-color: #CCCC00;
+  border-top: 3px solid #FFFF00;
+  border-right: 3px solid #999900;
+  border-bottom: 3px solid #999900;
+  border-left: 3px solid #FFFF00;
+}
+
+.t-cell-2 {
+  background-color: #00CC00;
+  border-top: 3px solid #00FF00;
+  border-right: 3px solid #009900;
+  border-bottom: 3px solid #009900;
+  border-left: 3px solid #00FF00;
+}
+
+.t-cell-3 {
+  background-color: #CC0000;
+  border-top: 3px solid #FF0000;
+  border-right: 3px solid #990000;
+  border-bottom: 3px solid #990000;
+  border-left: 3px solid #FF0000;
+}
+
+.t-cell-4 {
+  background-color: #0000CC;
+  border-top: 3px solid #0000FF;
+  border-right: 3px solid #000099;
+  border-bottom: 3px solid #000099;
+  border-left: 3px solid #0000FF;
+}
+
+.t-cell-5 {
+  background-color: #CC6600;
+  border-top: 3px solid #FF8800;
+  border-right: 3px solid #994400;
+  border-bottom: 3px solid #994400;
+  border-left: 3px solid #FF8800;
+}
+
+.t-cell-6 {
+  background-color: #9900CC;
+  border-top: 3px solid #CC00FF;
+  border-right: 3px solid #660099;
+  border-bottom: 3px solid #660099;
+  border-left: 3px solid #CC00FF;
+}
+
+.t-score-label {
+  font-weight: bold;
+}
+
+.t-score-label {
+  font-weight: bold;
+}
+
+.t-parent {
+  display: flex;
+}
+
+element.style {
+  width: 44px;
+  left: 0px;
+}

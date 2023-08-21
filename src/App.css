@@ -4,7 +4,7 @@
   padding: 2rem;
   text-align: center;
 }
-
+/*
 .fila{
   display: flex;
   flex-direction: row;
@@ -78,4 +78,26 @@
   border-bottom: 3px solid #660099;
   border-left: 3px solid #CC00FF;
 }
+*/
 
+.cell {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+}
+
+.filled {
+  background-color: #333;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.row {
+  display: flex;
+}

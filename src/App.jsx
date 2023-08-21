@@ -1,219 +1,144 @@
-import './App.css'
+import { useState, useEffect } from 'react';
 
-import { useState, useEffect,useRef } from 'react'
-import PropTypes from 'prop-types';
-function App() {
+const numRows = 20;
+const numCols = 10;
+const cellSize = 30;
+const emptyCell = 'white';
 
-  const colorPiezaRef = useRef('O');
-  const posPiezaRef = useRef([1,6]);
-  const nuevaPiezaRef = useRef(true);
-  const primeraPiezaRef = useRef(true);
-  const gameOverRef = useRef(false);
-  const gameIntervalRef = useRef(null);
-  const [juegoActualizado,setJuegoactualizado] = useState(false);
-  const [primeraVez,setPrimeraVez] = useState(true)
-  const tableroOriginal = [
-    ['B','B','B','B','B','B','B','B','B','B','B','B','B'],/*0*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*1*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*2*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*3*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*4*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*5*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*6*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*7*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*8*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*9*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*10*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*11*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*12*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*13*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*14*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*15*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*16*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*17*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*18*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*19*/
-    ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*20*/
-    ['B','B','B','B','B','B','B','B','B','B','B','B','B'],/*21*/
-  ]
+const tetrominoes = [
+  [[1, 1, 1, 1]],    // I
+  [[1, 1, 1], [0, 1, 0]],    // T
+  [[1, 1, 1], [1, 0, 0]],    // L
+  [[1, 1, 1], [0, 0, 1]],    // J
+  [[1, 1], [1, 1]],          // O
+  [[1, 1], [0, 1], [0, 1]],  // Z
+  [[1, 1], [1, 0], [1, 0]]   // S
+];
+const pieceColors = {
+  0: emptyCell,
+  1: 'cyan',    // I piece
+  2: 'purple',  // T piece
+  3: 'orange',  // L piece
+  4: 'blue',    // J piece
+  5: 'yellow',  // O piece
+  6: 'green',   // Z piece
+  7: 'red',     // S piece
+};
 
-  const [tablero,setTablero] = useState(tableroOriginal.map(subarray => [...subarray]))
+const getRandomTetromino = () => {
+  const tetrominoIndex = Math.floor(Math.random() * tetrominoes.length);
+  const tetromino = tetrominoes[tetrominoIndex];
+
+  const newTetromino = tetromino.map(row => row.map(cell => (cell === 1 ? tetrominoIndex + 1 : 0)));
+
+  return newTetromino;
+};
+
+const App = () => {
+  const [grid, setGrid] = useState(Array.from({ length: numRows }, () => Array(numCols).fill(emptyCell)));
+  const [currentTetromino, setCurrentTetromino] = useState(getRandomTetromino());
+
+  const moveTetrominoDown = () => {
+    const newTetromino = currentTetromino.map(row => [...row]);
   
-  const colores = ['R','N','A','L','V','M']
-  const clases = {
-    'B' : 'borde',
-    'O' : 'vacio',
-    'R' : 'rojo',
-    'N' : 'naranja',
-    'A' : 'amarillo',
-    'L' : 'azul',
-    'V' : 'verde',
-    'M' : 'morado',
-
-  }
-  //B = Borde
-
-  //R = rojo
-  //N = naranja
-  //A = amarillo
-  //L = azul
-  //V = verde
-  //M = morado
-
-  //O = vacio
-  //La pieza iniciara en la posicion 1(fila),7(columna)
-  //Si la 1/7 esta ocupada revisar las de al lado si todo esta ocupado pierdes
-  //Hay 22 filas y 13 columnas por fila
-  const Celda = ({color}) => {
-    return (<div className={'celda '+clases[color]}></div>)
-  }
+    for (let row = 0; row < newTetromino.length; row++) {
+      for (let col = 0; col < newTetromino[row].length; col++) {
+        if (newTetromino[row][col] !== 0) {
+          if (row + 1 < numRows) {
+            if (!newTetromino[row + 1]) {
+              newTetromino[row + 1] = Array(numCols).fill(0);
+            }
+            newTetromino[row + 1][col] = newTetromino[row][col];
+            newTetromino[row][col] = 0;
+          }
+        }
+      }
+    }
   
-  Celda.propTypes = {color: PropTypes.string.isRequired,};
+    setCurrentTetromino(newTetromino);
+  };
 
-  const reiniciarPartida = () => {
-    clearInterval(gameIntervalRef.current)
-    setTablero(tableroOriginal.map(subarray => [...subarray]))
-    colorPiezaRef.current = 'O'
-    posPiezaRef.current = [1,6]
-    nuevaPiezaRef.current = true
-    primeraPiezaRef.current = true
-    gameOverRef.current = false
-    setJuegoactualizado(!juegoActualizado)
-  }
+  const checkCollision = () => {
+    for (let row = 0; row < currentTetromino.length; row++) {
+      for (let col = 0; col < currentTetromino[row].length; col++) {
+        if (currentTetromino[row][col] !== 0) {
+          const newRow = row + 1;
+  
+          // Check collision with bottom boundary
+          if (newRow >= numRows) {
+            return true;
+          }
+  
+          // Check collision with other occupied cells
+          if (newRow < numRows && grid[newRow][col] !== emptyCell) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  const updateGrid = () => {
+    const newGrid = [...grid];
+  
+    for (let row = 0; row < currentTetromino.length; row++) {
+      for (let col = 0; col < currentTetromino[row].length; col++) {
+        if (currentTetromino[row][col] !== 0) {
+          newGrid[row][col] = pieceColors[currentTetromino[row][col]];
+        }
+      }
+    }
+    console.log(newGrid);
+    setGrid(newGrid);
+  };
+
+  const handleGameOver = () => {
+    console.log('Game Over');
+    // Display "Game Over" and reset the game
+    // ...
+  };
 
   useEffect(() => {
-    if(primeraVez){
-      setPrimeraVez(false)
-    }else{
-      empezarPartida()
-    }
-  },[juegoActualizado])
+    const interval = setInterval(() => {
+      moveTetrominoDown();
 
-  const comprobarPosicionInicial = () => {
-    console.log(".............");
-    console.log(tablero);
-    if(tablero[1][6]==='O'){
-      return [1,6]
-    }else{
-      for(let c in tablero[1]){
-        if(tablero[1][c]==='O'){return([1,parseInt(c)])}
-      }
-    }
-    return 'GameOver'
-  }
+      if (checkCollision()) {
+        updateGrid();
+        setCurrentTetromino(getRandomTetromino());
 
-  const comprobarPosicion = (tab,pos1,pos2) => {
-    return (tab[pos1][pos2]!=='O')
-  }
-
-  const bajarPieza = () => {
-    if(!gameOverRef.current){
-      let pos = posPiezaRef.current
-      console.log(pos);
-      let newTablero = [...tablero]
-      let ocupado = comprobarPosicion(newTablero,[pos[0]+1],[pos[1]])
-      if(ocupado){
-      
-        let posInicial = comprobarPosicionInicial()
-        if(posInicial==='GameOver'){
-          console.log('Perdiste')
-          gameOverRef.current=true
-        }else{
-          console.log(posInicial);
-          let color = colores[Math.floor(Math.random() * 6)]
-          colorPiezaRef.current = color
-          addPieza(posInicial,color)
-          posPiezaRef.current = posInicial
-          
+        if (checkCollision()) {
+          clearInterval(interval);
+          handleGameOver();
         }
-        nuevaPiezaRef.current = true
-      }else{
-        newTablero[pos[0]][pos[1]] = 'O'
-        newTablero[pos[0]+1][pos[1]] = colorPiezaRef.current
-        posPiezaRef.current = [pos[0]+1,pos[1]]
-        setTablero(newTablero)
       }
-    }
-  }
-
-  const moverLados = (izquierda) => {
-    if(!gameOverRef.current){
-      let pos = posPiezaRef.current
-      console.log(pos);
-      let newTablero = [...tablero]
-      let ocupado = comprobarPosicion(newTablero,[pos[0]],[izquierda?pos[1]-1:pos[1]+1])
-      if(!ocupado){
-        newTablero[pos[0]][pos[1]] = 'O'
-        newTablero[pos[0]][izquierda?pos[1]-1:pos[1]+1] = colorPiezaRef.current
-        posPiezaRef.current = [pos[0],izquierda?pos[1]-1:pos[1]+1]
-        setTablero(newTablero)
-      }
-    }
-  }
-
-  const addPieza = (pos,color) => {
-    let newTablero = [...tablero]
-    newTablero[pos[0]][pos[1]] = color
-    posPiezaRef.current = [pos[0],pos[1]]
-    nuevaPiezaRef.current = false
-    setTablero(newTablero)
-  }
-
-  const moverJuego = () => {
-    //console.log("entra");
-    //console.log(gameOverRef.current);
-    //console.log(nuevaPiezaRef.current);
-    if(!gameOverRef.current){
-      console.log(posPiezaRef.current);
-      if(primeraPiezaRef.current){
-        let color = colores[Math.floor(Math.random() * 6)]
-        colorPiezaRef.current = color
-        let posInicial = comprobarPosicionInicial()
-        addPieza(posInicial,color)
-        primeraPiezaRef.current = false
-
-      }else{
-        console.log("AAAAAAAAAAAAAAA");
-        bajarPieza()
-      }
-    }else{
-      clearInterval(gameIntervalRef.current)
-      console.log("GAME OVER")
-    }
-  }
-  const empezarPartida = () => {
-    gameIntervalRef.current = setInterval(() => {
-      moverJuego();
     }, 1000);
-  }
 
-  useEffect(()=>{
-    //EMPIEZA PARTIDA
-    empezarPartida()
-    return() => { 
-      clearInterval(gameIntervalRef.current)
-    }
-  },[])
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
-
-  return (<main>
-    <div className='tablero'>
-      {tablero.map((fila,index)=>{
-        return(<div className='fila' key={index}>
-          {fila.map((celda,index)=>{
-            return(<Celda key={index} color={celda}/>)
-          })}
-        </div>)
-      })}
+  return (
+    <div>
+      <h1>Tetris</h1>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${numCols}, ${cellSize}px)` }}>
+        {grid.map((row, rowIndex) =>
+          row.map((cellColor, colIndex) => (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              style={{
+                width: cellSize,
+                height: cellSize,
+                backgroundColor: cellColor,
+                border: '1px solid gray',
+              }}
+            />
+          ))
+        )}
+      </div>
     </div>
-    <div className='Botonera'>
-      <button onClick={()=>{moverLados(true)}} >IZQUIERDA</button>
-      <button onClick={()=>{bajarPieza()}} >ABAJO</button>
-      <button onClick={()=>{moverLados(false)}} >DERECHA</button>
-      <button onClick={()=>{reiniciarPartida()}} >REINICIAR</button>
-    </div>
+  );
+};
 
-  </main>)
-}
-
-export default App
+export default App;
