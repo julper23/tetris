@@ -7,7 +7,11 @@ function App() {
   const colorPiezaRef = useRef('O');
   const posPiezaRef = useRef([1,6]);
   const nuevaPiezaRef = useRef(true);
+  const primeraPiezaRef = useRef(true);
   const gameOverRef = useRef(false);
+  const gameIntervalRef = useRef(null);
+  const [juegoActualizado,setJuegoactualizado] = useState(false);
+  const [primeraVez,setPrimeraVez] = useState(true)
   const tableroOriginal = [
     ['B','B','B','B','B','B','B','B','B','B','B','B','B'],/*0*/
     ['B','O','O','O','O','O','O','O','O','O','O','O','B'],/*1*/
@@ -33,7 +37,7 @@ function App() {
     ['B','B','B','B','B','B','B','B','B','B','B','B','B'],/*21*/
   ]
 
-  const [tablero,setTablero] = useState(tableroOriginal)
+  const [tablero,setTablero] = useState(tableroOriginal.map(subarray => [...subarray]))
   
   const colores = ['R','N','A','L','V','M']
   const clases = {
@@ -65,6 +69,26 @@ function App() {
   }
   
   Celda.propTypes = {color: PropTypes.string.isRequired,};
+
+  const reiniciarPartida = () => {
+    clearInterval(gameIntervalRef.current)
+    setTablero(tableroOriginal.map(subarray => [...subarray]))
+    colorPiezaRef.current = 'O'
+    posPiezaRef.current = [1,6]
+    nuevaPiezaRef.current = true
+    primeraPiezaRef.current = true
+    gameOverRef.current = false
+    setJuegoactualizado(!juegoActualizado)
+  }
+
+  useEffect(() => {
+    if(primeraVez){
+      setPrimeraVez(false)
+    }else{
+      empezarPartida()
+    }
+  },[juegoActualizado])
+
   const comprobarPosicionInicial = () => {
     console.log(".............");
     console.log(tablero);
@@ -78,12 +102,53 @@ function App() {
     return 'GameOver'
   }
 
-  const comprobarPosicion = (tab,posiciones) => {
-
+  const comprobarPosicion = (tab,pos1,pos2) => {
+    return (tab[pos1][pos2]!=='O')
   }
 
-  const moverPieza = (tab,posiciones) => {
+  const bajarPieza = () => {
+    if(!gameOverRef.current){
+      let pos = posPiezaRef.current
+      console.log(pos);
+      let newTablero = [...tablero]
+      let ocupado = comprobarPosicion(newTablero,[pos[0]+1],[pos[1]])
+      if(ocupado){
+      
+        let posInicial = comprobarPosicionInicial()
+        if(posInicial==='GameOver'){
+          console.log('Perdiste')
+          gameOverRef.current=true
+        }else{
+          console.log(posInicial);
+          let color = colores[Math.floor(Math.random() * 6)]
+          colorPiezaRef.current = color
+          addPieza(posInicial,color)
+          posPiezaRef.current = posInicial
+          
+        }
+        nuevaPiezaRef.current = true
+      }else{
+        newTablero[pos[0]][pos[1]] = 'O'
+        newTablero[pos[0]+1][pos[1]] = colorPiezaRef.current
+        posPiezaRef.current = [pos[0]+1,pos[1]]
+        setTablero(newTablero)
+      }
+    }
+  }
 
+  const moverLados = (izquierda) => {
+    if(!gameOverRef.current){
+      let pos = posPiezaRef.current
+      console.log(pos);
+      let newTablero = [...tablero]
+      let ocupado = comprobarPosicion(newTablero,[pos[0]],[izquierda?pos[1]-1:pos[1]+1])
+      if(!ocupado){
+        newTablero[pos[0]][pos[1]] = 'O'
+        newTablero[pos[0]][izquierda?pos[1]-1:pos[1]+1] = colorPiezaRef.current
+        posPiezaRef.current = [pos[0],izquierda?pos[1]-1:pos[1]+1]
+        setTablero(newTablero)
+      }
+    }
   }
 
   const addPieza = (pos,color) => {
@@ -95,36 +160,38 @@ function App() {
   }
 
   const moverJuego = () => {
-    console.log("entra");
-    console.log(gameOverRef.current);
-    console.log(nuevaPiezaRef.current);
+    //console.log("entra");
+    //console.log(gameOverRef.current);
+    //console.log(nuevaPiezaRef.current);
     if(!gameOverRef.current){
       console.log(posPiezaRef.current);
-      if(nuevaPiezaRef.current){
+      if(primeraPiezaRef.current){
         let color = colores[Math.floor(Math.random() * 6)]
         colorPiezaRef.current = color
         let posInicial = comprobarPosicionInicial()
-        if(posInicial==='GameOver'){
-          console.log('Perdiste')
-          gameOverRef.current=true
-        }else{
-          console.log(posInicial);
-          addPieza(posInicial,color)
-          
-        }
+        addPieza(posInicial,color)
+        primeraPiezaRef.current = false
+
       }else{
         console.log("AAAAAAAAAAAAAAA");
+        bajarPieza()
       }
+    }else{
+      clearInterval(gameIntervalRef.current)
+      console.log("GAME OVER")
     }
+  }
+  const empezarPartida = () => {
+    gameIntervalRef.current = setInterval(() => {
+      moverJuego();
+    }, 1000);
   }
 
   useEffect(()=>{
     //EMPIEZA PARTIDA
-    let tick = setInterval(() => {
-      moverJuego();
-    }, 5000);
+    empezarPartida()
     return() => { 
-      clearInterval(tick)
+      clearInterval(gameIntervalRef.current)
     }
   },[])
 
@@ -140,9 +207,10 @@ function App() {
       })}
     </div>
     <div className='Botonera'>
-      <button>IZQUIERDA</button>
-      <button>ABAJO</button>
-      <button>DERECHA</button>
+      <button onClick={()=>{moverLados(true)}} >IZQUIERDA</button>
+      <button onClick={()=>{bajarPieza()}} >ABAJO</button>
+      <button onClick={()=>{moverLados(false)}} >DERECHA</button>
+      <button onClick={()=>{reiniciarPartida()}} >REINICIAR</button>
     </div>
 
   </main>)
